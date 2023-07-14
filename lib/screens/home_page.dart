@@ -3,8 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:quran_api/services/quran_model.dart';
 
-import '../services/quran.dart';
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -14,24 +12,14 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool isLoaded = false;
+
   final ImageProvider _assetsImage =
       const AssetImage('assets/images/mosque.jpg');
   final ImageProvider _networkImage = const NetworkImage(
       'https://source.unsplash.com/random/?quran,mosque,prayer,nature,rivers,islamic/?orientation=portrait');
 
+  String? ayah;
   QuranModel quranModel = QuranModel();
-//  late String surah;
-  late String ayah;
-//  late int numberOfAyah;
-
-  void updateUi() {
-    // surah = quranModel.surah;
-    getImage();
-    getAyah();
-    // numberOfAyah = quranModel.numberOfAyah;
-  }
-
-  QuranApi quranApi = QuranApi();
 
   void getImage() {
     _networkImage
@@ -46,64 +34,64 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     getImage();
-    print('ddd');
-    ayah = quranModel.ayah;
-    updateUi();
-    print('aaa');
-
+    getAyah();
     super.initState();
   }
 
-  String getAyah() {
-    if (ayah.isNotEmpty) {
-      return ayah;
-    } else {
-      return 'بسم الله الرحمن الرحيم';
-    }
+  getAyah() {
+    quranModel.getRandomAyah().then((value) {
+      ayah = value;
+      setState(() {});
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GestureDetector(
-        onTap: () => updateUi,
-        child: Stack(children: [
-          Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                fit: BoxFit.cover,
-                image: !isLoaded ? _assetsImage : _networkImage,
-              ),
+      body: Stack(children: [
+        Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              fit: BoxFit.cover,
+              image: !isLoaded ? _assetsImage : _networkImage,
             ),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [
-                    Colors.white.withOpacity(0.1),
-                    Colors.white.withOpacity(0.1),
-                  ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
-                  // color: Colors.white.withOpacity(0.0),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        getAyah(),
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
+          ),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [
+                  Colors.white.withOpacity(0.1),
+                  Colors.white.withOpacity(0.1),
+                ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
+                // color: Colors.white.withOpacity(0.0),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ayah != null
+                        ? Text(
+                            '$ayah',
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold),
+                          )
+                        : Text(
+                            'بسم الله الرحمن الرحيم',
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold),
+                          ),
+                  ],
                 ),
               ),
             ),
           ),
-        ]),
-      ),
+        ),
+      ]),
     );
   }
 }
